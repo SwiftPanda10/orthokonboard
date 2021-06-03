@@ -1,137 +1,145 @@
 class OrthokonBoard:
 
-
     def __init__(self):
-        self._board = [[" " for i in range(4)] for j in range(4)]
-        # self._ptrack = [[" " for i in range(4)] for j in range(4)]
+        self._board = self.__build_board()
         self._current_state = "UNFINISHED"
-        # self.fill = 0
+
+    def __build_board(self):
+        # empty 4 by 4 game board
+        new_board = [[" " for i in range(0,3)] for j in range(0,3)]
+        # add red to row 0
+        for col in range(0, 3):
+            new_board[0][col] = "R"
+        # add yellow to row 3
+        for col in range (0, 3):
+            new_board[3][col] = "Y"
+        return new_board
 
     def get_current_state(self):
         return self._current_state
-
-    def check(self,row,col,letter,player):
-
-        if row < 2 and col < 2 :
-            region = 1
-        elif row < 2 and col >= 2:
-            region = 2
-        elif row >= 2 and col < 2 :
-            region = 3
-        elif row >= 2 and col >= 2:
-            region = 4
-        if region == 1:
-            data = [self._board[0][0],self._board[0][1],self._board[1][0],self._board[1][1]]
-            if letter in data:
-                return False
-        elif region == 2:
-            data = [self._board[0][2],self._board[0][3],self._board[1][2],self._board[1][3]]
-            if letter in data:
-                return False
-        elif region == 3:
-            data = [self._board[2][0],self._board[2][1],self._board[3][0],self._board[3][1]]
-            if letter in data:
-                return False
-        elif region == 1:
-            data = [self._board[3][2],self._board[3][3],self._board[2][2],self._board[2][3]]
-            if letter in data:
-                return False
-        for i in range(4):
-            if self._ptrack[row][i] != player and self._board[row][i] == letter:
-                return False
-        for i in range(4):
-            if self._ptrack[row][i] != player and self._board[row][i] == letter:
-                return False
-        return True
-
-    def check_winner(self,row,col):
-
-
-        if row < 2 and col < 2 :
-            region = 1
-        elif row < 2 and col >= 2:
-            region = 2
-        elif row >= 2 and col < 2 :
-            region = 3
-        elif row >= 2 and col >= 2:
-            region = 4
-
-        if region == 1:
-
-            data = [self._board[0][0],self._board[0][1],self._board[1][0],self._board[1][1]]
-
-            if sorted(data) == ['A','B','C','D']:
-                return True
-
-
-
-        elif region == 2:
-
-            data = [self._board[0][2],self._board[0][3],self._board[1][2],self._board[1][3]]
-
-            if sorted(data) == ['A','B','C','D']:
-                return True
-
-
-
-        elif region == 3:
-
-            data = [self._board[2][0],self._board[2][1],self._board[3][0],self._board[3][1]]
-
-            if sorted(data) == ['A','B','C','D']:
-                return True
-
-
-        elif region == 1:
-
-            data = [self._board[3][2],self._board[3][3],self._board[2][2],self._board[2][3]]
-
-            if sorted(data) == ['A','B','C','D']:
-                return True
-
-
-        for i in range(4):
-            data = [self._board[row][0],self._board[row][1],self._board[row][2],self._board[row][3]]
-
-
-            if sorted(data) == ['A','B','C','D']:
-                return True
-
-
-        for i in range(4):
-            data = [self._board[0][col],self._board[1][col],self._board[2][col],self._board[3][col]]
-
-
-            if sorted(data) == ['A','B','C','D']:
-                return True
-
-        return False
-
-    def print_board(self):
-        for i in range(4):
-            print(self._board[i])
-
-        print()
-
-    def make_move(self,row,col,letter,player):
-
-        if self.fill != 16 and self._board[row][col] == " " and self._current_state == "UNFINISHED" and self.check(row,col,letter,player):
-            self._board[row][col] = letter
-            self._ptrack[row][col] = player
-            self.fill += 1
-            if self.check_winner(row,col) == True:
-                if player == 'x':
-                    self._current_state = "X_WON"
-                elif player == "o":
-                    self._current_state = "O_WON"
-
-            self.print_board()
-
-            return True
-        else:
+    # moves game piece from start to end position
+    # updates board if move is valid and returns true
+    # return false otherwise
+    def make_move(self, startRow, startCol, endRow, endCol):
+        # ensure input is within range of game board otherwise return false
+        if self.__position_off_board(startRow) or self.__position_off_board(startCol) or self.__position_off_board(endRow) or self.__position_off_board(endCol):
             return False
 
-board = OrthokonBoard()
-board.make_move(0,0,'B','o')
-board.make_move(3,3,'D','o')
-print(board.get_current_state())
+
+        # ensure start is different than end
+        if startRow == endRow and startCol == endCol:
+            return False
+
+        # ensure there is a piece at the starting point otherwise return false
+        if self._board[startRow][startCol] != " ":
+            return False
+
+        # grab the player piece color from board
+        player = self._board[startRow][startCol]
+
+        # update player piece and then board
+        self.__update_piece(startRow, startCol, endRow, endCol, player)
+
+
+    def __position_off_board(self, num):
+        # if out of board space
+        if num < 0 or num > 3:
+            return False
+        else:
+            return True
+
+    def __update_piece(self, startRow, startCol, endRow, endCol, player):
+        # determine if move is diagonal or orthogonal and store type
+        isMoveOrthogonal = self._is_move_orthogonal(startRow, startCol, endRow, endCol)
+
+        # update the row one towards the endRow
+        row = self._new_position(startRow, endRow)
+
+        # update the col one towards the endCol
+        col = self._new_position(startCol, endCol)
+
+        # check if move is valid
+        if self._move_is_invalid(row, col, player):
+            return False
+
+        # update board so old start position is blank
+        self._board[startRow][startCol] = ""
+
+        # move piece
+        self._move_piece(self, row, col, endRow, endCol, player, isMoveOrthogonal)
+
+        def __is_move_orthogonal(self, startRow, startCol, endRow, endCol):
+            if startRow == endRow or startCol == endCol:
+                return True
+            else:
+                return False
+
+        # create new position from start and end
+        def _new_position(self, start, end):
+            # start is less than end then add one to start
+            if start < end:
+                return start + 1
+            # else if start is greater than end subtract one from start
+            elif start > end:
+                return start - 1
+            # else start and end are same and return start
+            else:
+                return start
+
+        # check if move is valid
+        def __move_is_invalid(self, row, col, player):
+            if self.__position_off_board(row) or self.__position_off_board(col) or self._board[row][col] != player:
+                return False
+            else:
+                return True
+
+        # recursively move the piece
+        def __move_piece(self, startRow, startCol, endRow, endCol, player, isMoveOrthogonal):
+            # determine if move is still diagonal or orthogonal and if does not match return false
+            if self.__is_move_orthogonal(startRow, startCol, endRow, endCol) != isMoveOrthogonal:
+                return False
+
+            # check if move is invalid
+            if self.__move_is_invalid(row, col, player):
+                self.__update_board(startRow, startCol, player)
+                return True
+
+            if startRow == endRow and startCol == endCol:
+                self.__update_board(startRow, startCol, player)
+                return True
+
+            # update the row one towards the endRow
+            row = self.__new_position(startRow, endRow)
+
+            # update the col one towards the endCol
+            col = self.__new_position(startCol, endCol)
+
+            # update board so old start position is blank
+            self._board[startRow][startCol] =" "
+            # move piece
+            self.__move_piece(self, row, col, endRow, endCol, player, isMoveOrthogonal)
+
+            def __update_board(self, row, col, player):
+                # check above convert to R or Y
+                if not self.__position_off_board(row + 1):
+                    currentPiece = self._board[row + 1][col]
+                    if currentPiece !=" ":
+                        self._board[row + 1][col] = player
+
+            # check below convert to R or Y
+            if not self.__position_off_board(row - 1):
+                currentPiece = self._board[row - 1][col]
+                if currentPiece !=" ":
+                    self._board[row - 1][col] = player
+
+            # check right convert to R or Y
+            if not self.__position_off_board(col + 1):
+                currentPiece = self._board[row][col + 1]
+                if currentPiece !=" ":
+                    self._board[row][col + 1] = player
+
+            # check left convert to R or Y
+            if not self.__position_off_board(col - 1):
+                currentPiece = self._board[row][col - 1]
+                if currentPiece !=" ":
+                    self._board[row][col] = player
