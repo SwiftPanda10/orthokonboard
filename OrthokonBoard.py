@@ -68,7 +68,7 @@ class OrthokonBoard:
         # move piece
         self._move_piece(self, row, col, endRow, endCol, player, isMoveOrthogonal)
 
-        def __is_move_orthogonal(self, startRow, startCol, endRow, endCol):
+        def _is_move_orthogonal(self, startRow, startCol, endRow, endCol):
             if startRow == endRow or startCol == endCol:
                 return True
             else:
@@ -93,14 +93,13 @@ class OrthokonBoard:
             else:
                 return True
 
-        # recursively move the piece
         def __move_piece(self, startRow, startCol, endRow, endCol, player, isMoveOrthogonal):
             # determine if move is still diagonal or orthogonal and if does not match return false
             if self.__is_move_orthogonal(startRow, startCol, endRow, endCol) != isMoveOrthogonal:
                 return False
 
             # check if move is invalid
-            if self.__move_is_invalid(row, col, player):
+            if self.__move_is_invalid(endRow,endCol,player):
                 self.__update_board(startRow, startCol, player)
                 return True
 
@@ -143,3 +142,27 @@ class OrthokonBoard:
                 currentPiece = self._board[row][col - 1]
                 if currentPiece !=" ":
                     self._board[row][col] = player
+
+    def _move_is_invalid(self, row, col, player):
+        pass
+
+    def _new_position(self, startRow, endRow):
+        pass
+
+    def _move_piece(self, self1, row, col, endRow, endCol, player, isMoveOrthogonal):
+        pass
+# returns RED_WON if all pieces on board are red
+# returns YELLOW_WON if all pieces on board are yellow
+# returns UNFINISHED if pieces on board are read and yellow
+# property to store lastSeenPlayer color
+# loop over every row
+# loop over every col in row
+# if piece is at board row col
+# if lastSeenPlayer color is empty
+# set lastSeenPlayer
+# else if piece at board row col != lastSeenPlayer
+# return UNFINISHED
+# if lastSeenPlayer is Red
+# return RED_WON
+# else
+# return YELLOW_WON
