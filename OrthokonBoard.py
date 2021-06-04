@@ -1,3 +1,6 @@
+# Author: Samuel Bennett
+# Date: 6/3/2021
+# Description: Orthokon Board game on a 4x4 grid with Yellow and Red Players. (Unfinished)
 class OrthokonBoard:
 
     def __init__(self):
